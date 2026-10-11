@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  // Matches the backend's ESM + NodeNext module setup.
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+// PENDING   -> Stripe Checkout Session created, waiting for payment
+// PAID      -> payment confirmed and stock deducted (in one transaction)
+// CANCELLED -> customer cancelled or the checkout session expired
+// REFUNDED  -> payment succeeded but an item sold out before stock could be
+//              deducted, so the payment was refunded automatically
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  name         String     @db.VarChar(100)
+  email        String     @unique @db.VarChar(254)
+  // bcrypt hash only; the plain password is never stored.
+  passwordHash String
+  role         Role       @default(CUSTOMER)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  cartItems    CartItem[]
+  orders       Order[]
+
+  @@map("users")
+}
+
+model Product {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String      @db.VarChar(120)
+  description String      @default("") @db.VarChar(2000)
+  // Money is stored in the smallest currency unit (cents) to avoid
+  // floating-point rounding errors.
+  priceCents  Int
+  imageUrl    String      @default("")
+  category    String      @default("General") @db.VarChar(60)
+  // A CHECK constraint in the migration also keeps this from going negative.
+  stock       Int         @default(0)
+  // Hidden products are kept so past orders still reference them.
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+
+  @@index([active, createdAt])
+  @@map("products")
+}
+
+// The shopping cart is stored per user in the database, so it survives
+// logouts, reloads and switching devices.
+model CartItem {
+  userId    String   @db.Uuid
+  productId String   @db.Uuid
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([userId, productId])
+  @@map("cart_items")
+}
+
+model Order {
+  id                    String      @id @default(uuid()) @db.Uuid
+  userId                String      @db.Uuid
+  status                OrderStatus @default(PENDING)
+  totalCents            Int
+  currency              String      @db.VarChar(3)
+  stripeSessionId       String?     @unique
+  stripePaymentIntentId String?
+  // When the Stripe Checkout Session stops accepting payment.
+  expiresAt             DateTime
+  paidAt                DateTime?
+  failureReason         String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items                 OrderItem[]
+
+  @@index([userId, createdAt])
+  @@index([status, expiresAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String  @id @default(uuid()) @db.Uuid
+  orderId    String  @db.Uuid
+  productId  String  @db.Uuid
+  // Name and price are copied at checkout so the order keeps showing what
+  // the customer actually paid, even if the product changes later.
+  name       String  @db.VarChar(120)
+  priceCents Int
+  quantity   Int
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@map("order_items")
+}
