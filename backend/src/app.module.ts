@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { CartModule } from './cart/cart.module.js';
+import { OrdersModule } from './orders/orders.module.js';
 import { HealthController } from './health/health.controller.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
@@ -41,6 +42,7 @@ const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
     AuthModule,
     ProductsModule,
     CartModule,
+    OrdersModule,
   ],
   controllers: [HealthController],
   providers: [
