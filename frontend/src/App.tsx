@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthProvider'
 import { CartProvider } from './cart/CartProvider'
 import { Layout } from './components/Layout'
 import { RequireAuth } from './components/RequireAuth'
+import { AdminPage } from './pages/AdminPage'
 import { AuthPage } from './pages/AuthPage'
 import { CartPage } from './pages/CartPage'
 import { CheckoutCancelPage } from './pages/CheckoutCancelPage'
@@ -39,6 +40,14 @@ export function AppRoutes() {
           element={
             <RequireAuth>
               <OrdersPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="admin"
+          element={
+            <RequireAuth role="ADMIN">
+              <AdminPage />
             </RequireAuth>
           }
         />
