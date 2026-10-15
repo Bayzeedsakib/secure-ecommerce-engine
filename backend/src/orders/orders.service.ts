@@ -190,10 +190,14 @@ export class OrdersService {
       take: 200,
     });
 
-    return orders.map((order) => ({
-      ...toOrderView(order),
-      customer: order.user,
-    }));
+    // Pending orders are refreshed from Stripe so the admin sees abandoned
+    // checkouts as cancelled and completed ones as paid.
+    return Promise.all(
+      orders.map(async ({ user, ...order }) => ({
+        ...toOrderView(await this.reconcile(order)),
+        customer: user,
+      })),
+    );
   }
 
   // A PENDING order may already be paid or expired on Stripe's side if the

@@ -2,6 +2,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { VALID_SIGNATURE } from './support/fake-payment-gateway.js';
 import {
+  createAdmin,
   createProduct,
   createTestApp,
   registerUser,
@@ -300,6 +301,27 @@ describe('checkout and inventory', () => {
 
     expect(res.body[0].status).toBe('PAID');
     expect(await stockOf(product.id)).toBe(3);
+  });
+
+  it('shows abandoned and completed checkouts correctly in the admin order list', async () => {
+    const { auth } = await registerUser(ctx.http);
+    const admin = await createAdmin(ctx.prisma, ctx.http);
+    const product = await createProduct(ctx.prisma, { stock: 5 });
+    await addToCart(ctx.http, auth, product.id, 1);
+    const abandoned = await startCheckout(auth);
+    const paid = await startCheckout(auth);
+    await ctx.payments.expireCheckoutSession(abandoned.sessionId);
+    ctx.payments.pay(paid.sessionId);
+
+    const res = await request(ctx.http)
+      .get('/api/admin/orders')
+      .set('Authorization', admin.auth);
+
+    const statusOf = (id: string) =>
+      res.body.find((order: { id: string }) => order.id === id).status;
+    expect(statusOf(abandoned.orderId)).toBe('CANCELLED');
+    expect(statusOf(paid.orderId)).toBe('PAID');
+    expect(await stockOf(product.id)).toBe(4);
   });
 
   it("hides other customers' orders", async () => {

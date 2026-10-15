@@ -111,7 +111,7 @@ Copy the `whsec_…` secret it prints into `STRIPE_WEBHOOK_SECRET` in `backend/.
 ```bash
 cd backend
 npm test             # unit tests
-npm run test:e2e     # 36 end-to-end tests (needs the Docker database running)
+npm run test:e2e     # 37 end-to-end tests (needs the Docker database running)
 
 cd ../frontend
 npm test             # 10 component tests
