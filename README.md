@@ -1,4 +1,12 @@
-# Secure E-Commerce Engine with Stripe Checkout
+# 🛒 Secure E-Commerce Engine with Stripe Checkout
+
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat-square&logo=nestjs&logoColor=white)
+![React 19](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=flat-square&logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Stripe](https://img.shields.io/badge/Stripe-635BFF?style=flat-square&logo=stripe&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 
 A full-stack online store with secure user accounts, a shopping cart that is saved to the user's account, and a checkout that takes payment through **Stripe's test mode (sandbox)** and then adjusts the stock in the database.
 
@@ -182,3 +190,7 @@ All endpoints are under `/api`. Interactive documentation is at **http://localho
         ├── pages/              shop, cart, login, checkout, orders, admin
         └── components/         layout, product card, order summary, …
 ```
+
+## 👤 Author
+
+**Bayzeed Sakib** · [GitHub](https://github.com/Bayzeedsakib) · [Portfolio](https://bayzeed-sakib-portfolio.vercel.app)
